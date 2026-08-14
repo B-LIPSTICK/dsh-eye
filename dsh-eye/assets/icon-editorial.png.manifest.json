@@ -1,0 +1,107 @@
+{
+  "layout_grid": {
+    "inset": 72,
+    "inset_ratio": 0.07
+  },
+  "manifest_version": 1,
+  "motif": {
+    "cleanup": {
+      "initial_min_component_area": 16,
+      "removed_components": 9,
+      "removed_pixels": 3216,
+      "resized_min_component_area": 153
+    },
+    "file_name": "motif.png",
+    "sha256": "6ff52b4dfd4aa31ad87948f908ee8c6d05f10d059c30e50eaaedf227a4b80388"
+  },
+  "motif_region": {
+    "height": 187,
+    "width": 328,
+    "x": 72,
+    "y": 693
+  },
+  "options": {
+    "accent_font_path": null,
+    "accent_scale": 0.7,
+    "font_path": "C:\\Windows\\Fonts\\georgia.ttf",
+    "layout": "lower-left",
+    "margin_ratio": 0.07,
+    "motif_center_x": null,
+    "motif_top_ratio": 0.16,
+    "motif_width_ratio": 0.54,
+    "panel_color": "#E8E1D5",
+    "panel_height": null,
+    "subtitle": null,
+    "subtitle_color": null,
+    "subtitle_font_path": null,
+    "target_width": 1024,
+    "title": "dsh-eye",
+    "title_accent": null,
+    "title_bottom_inset_ratio": 0.115,
+    "title_color": "#0F4C43",
+    "title_optical_offset_ratio": 0.012,
+    "title_size_ratio": 0.041
+  },
+  "output": {
+    "file_name": "icon-editorial.png",
+    "sha256": "96cb52719d3711ea82fe6827e54cf947f29f058a1cc3409993afda5c4e54bc91",
+    "size": [
+      1024,
+      1105
+    ]
+  },
+  "panel": {
+    "color": "#E8E1D5",
+    "height": 491,
+    "y": 614
+  },
+  "photo_region": {
+    "height": 614,
+    "pixel_exact": false,
+    "pixel_sha256": "9f2650cdbe945f3240f2708559934deff6617a3825d932de0d2bf9e65f81fa04",
+    "width": 1024,
+    "x": 0,
+    "y": 0
+  },
+  "source": {
+    "file_name": "source.png",
+    "rendered_pixel_sha256": "9f2650cdbe945f3240f2708559934deff6617a3825d932de0d2bf9e65f81fa04",
+    "sha256": "6f8264b2dc481222fd539066552b25e34091a279bfcf3b4700f21ebc565162d9",
+    "visual_size": [
+      1000,
+      600
+    ]
+  },
+  "typography": {
+    "accent_font_file": null,
+    "bottom_inset": 118,
+    "font_file": "georgia.ttf",
+    "kerning_mode": "whole-run",
+    "layout": "lower-left",
+    "subtitle": null,
+    "subtitle_color": "#0F4C43",
+    "subtitle_font_file": null,
+    "subtitle_font_size": null,
+    "subtitle_region": null,
+    "title": "dsh-eye",
+    "title_accent": null,
+    "title_anchor_x": 84,
+    "title_color": "#0F4C43",
+    "title_font_size": 42,
+    "title_optical_offset": 12,
+    "title_region": {
+      "height": 41,
+      "width": 143,
+      "x": 84,
+      "y": 946
+    },
+    "title_runs": [
+      {
+        "font_file": "georgia.ttf",
+        "font_size": 42,
+        "style": "primary",
+        "text": "dsh-eye"
+      }
+    ]
+  }
+}

@@ -147,18 +147,26 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
 }
 Write-OK "Node.js 就绪"
 
-# 1. 看图配置
-Write-Step "配置看图（vision）"
+# 1. 看图配置（默认：智谱免费）
+Write-Step "配置看图（vision，直接回车用免费默认）"
 $vision = @{}
 $vision.baseUrl = $BaseUrl
-if (-not $vision.baseUrl) { $vision.baseUrl = Read-Host "看图端点地址" }
+if (-not $vision.baseUrl) {
+  $vision.baseUrl = Read-Host "看图端点地址（回车 = 智谱免费）"
+  if (-not $vision.baseUrl) { $vision.baseUrl = "https://open.bigmodel.cn/api/paas/v4" }
+}
 $vision.model = $Model
-if (-not $vision.model)   { $vision.model = Read-Host "看图模型名" }
+if (-not $vision.model) {
+  $vision.model = Read-Host "看图模型名（回车 = glm-4v-flash）"
+  if (-not $vision.model) { $vision.model = "glm-4v-flash" }
+}
 $vision.apiKey = $ApiKey
-if (-not $vision.apiKey)  { $vision.apiKey = Read-Host "看图 API Key（可留空）" }
+if (-not $vision.apiKey) {
+  $vision.apiKey = Read-Host "看图 API Key（必填；本地模型可留空）"
+}
 Write-OK "看图：$($vision.baseUrl) / $($vision.model)"
 
-# 2. 画图配置（可选）
+# 2. 画图配置（可选，默认开启并复用看图）
 $gen = $null
 if (-not $SkipGen) {
   if ($GenModel) {
@@ -169,11 +177,12 @@ if (-not $SkipGen) {
     }
     Write-OK "画图：$($gen.baseUrl) / $($gen.model)（$(if ($GenBaseUrl) { '独立端点' } else { '复用看图端点' })）"
   } else {
-    $wantGen = Read-Host "`n是否配置画图功能？[y/N]"
-    if ($wantGen -match "^(y|yes|是)$") {
-      $reuse = Read-Host "画图是否复用看图的端点与 Key？[y/N]"
-      if ($reuse -match "^(y|yes|是)$") {
-        $genModel = Read-Host "画图模型名"
+    $wantGen = Read-Host "`n是否配置画图功能？[Y/n]（回车 = 配置）"
+    if ($wantGen -eq "" -or $wantGen -match "^(y|yes|是)$") {
+      $reuse = Read-Host "画图是否复用看图的端点与 Key？[Y/n]（回车 = 复用）"
+      if ($reuse -eq "" -or $reuse -match "^(y|yes|是)$") {
+        $genModel = Read-Host "画图模型名（回车 = cogview-3-flash）"
+        if (-not $genModel) { $genModel = "cogview-3-flash" }
         $gen = @{ baseUrl = $vision.baseUrl; model = $genModel; apiKey = $vision.apiKey }
         Write-OK "画图复用看图端点：$($gen.baseUrl) / $($gen.model)"
       } else {

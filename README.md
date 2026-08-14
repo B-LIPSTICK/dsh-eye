@@ -68,17 +68,18 @@ OpenAI 兼容视觉端点（智谱 / 千问 / OpenAI / Ollama …）
 画图同理：`generate.mjs` 调用 `/images/generations`，保存图片到
 `%DSH_HOME%\storages\dsh-eye\`（未设置 DSH_HOME 时用系统临时目录），输出文件路径。
 
-## 快速开始（3 步）
+## 快速开始（2 步，5 分钟）
 
 ```powershell
-# ① 把 dsh-eye 文件夹放进你的 skills 目录（例如 $env:USERPROFILE\.agents\skills\）
-# ② 运行配置向导（交互式：看图端点 → 模型 → Key → 画图，可复用看图配置）
-powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.agents\skills\dsh-eye\scripts\setup.ps1"
+# ① 下载并一键安装（自动放进 skills 目录 + 启动配置向导）
+git clone https://github.com/B-LIPSTICK/dsh-eye.git
+powershell -ExecutionPolicy Bypass -File dsh-eye\install.ps1
 
-# ③ 让模型使用它 —— 分享图片路径 / URL，或要求画图
+# ② 配置时只需填 API Key，其余直接回车用免费默认（智谱）
+#    完成后重启会话，分享图片路径 / URL 即可看图
 ```
 
-> 💡 `$env:USERPROFILE` 是 PowerShell 写法；在 cmd 里用 `%USERPROFILE%`，效果相同。
+> 💡 没有 git？直接网页 Download ZIP，解压后进文件夹跑 `install.ps1` 也一样。
 
 > ⚠️ **新手必读 · 第 1 条**：使用 DeepSeek 等纯文本模型时，**不要直接在对话框里粘贴图片**
 > ——系统会拒绝图片内容。请发送图片的**文件路径或网址**（如 `看看这张图 C:\Users\你\Pictures\test.png`），

@@ -30,10 +30,11 @@ description: >-
 ## 前提
 
 - Node.js 18+（`node --version` 确认）
-- 已配置 API Key（首次使用请让用户运行配置向导，或检查环境变量）：
+- 已配置 API Key。首次使用优先让用户运行仓库根的 `install.ps1`（一键安装 + 配置向导，
+  除 API Key 外全程回车用免费默认）；已装好 skill 的则直接运行配置向导：
 
 ```powershell
-# 交互式配置（看图 + 画图，端点 / 模型 / Key 可各自独立）
+# 交互式配置（看图 + 画图，除 Key 外可全部回车用免费默认）
 powershell -ExecutionPolicy Bypass -File <skill路径>\scripts\setup.ps1
 
 # 或手动设置环境变量（PowerShell）

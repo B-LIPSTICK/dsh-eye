@@ -19,14 +19,64 @@
 
 ---
 
-## 为什么做这个
+<details open>
+<summary><b>📑 目录</b></summary>
 
-DeepSeek 很聪明，但它看不见。大多数方案让用户"切换支持图片的模型"，而 dsh-eye 的
-思路相反：**给模型装上眼睛和手**。让模型在"看图"这件事上不依赖自身的多模态能力，
-而是调用视觉 API 替它完成——这对所有纯文本模型（DeepSeek、各类本地小模型）都成立。
+- [快速开始（2 步，5 分钟）](#快速开始2-步5-分钟)
+- [使用方式](#使用方式)
+- [功能](#功能)
+- [配置](#配置)
+- [工作原理](#工作原理)
+- [数据与隐私](#数据与隐私)
+- [费用](#费用)
+- [常见问题](#常见问题)
+- [开发与测试](#开发与测试)
+- [目录结构](#目录结构)
+- [路线图](#路线图)
+- [致谢](#致谢)
+- [许可证](#许可证)
 
-项目最初以 DSH 插件形式开发并发布，后来为了**更简单的分发与使用**整体重构为 Skill：
-一个文件夹、一份 SKILL.md、两个零依赖脚本，复制即用。
+</details>
+
+---
+
+## 快速开始（2 步，5 分钟）
+
+```powershell
+# ① 下载并一键安装（自动放进 skills 目录 + 启动配置向导）
+git clone https://github.com/B-LIPSTICK/dsh-eye.git
+powershell -ExecutionPolicy Bypass -File dsh-eye\install.ps1
+
+# ② 向导里只需填 API Key，其余直接回车用免费默认（智谱）
+#    完成后重启会话，分享图片路径 / URL 即可看图
+```
+
+> ⚠️ **新手必读**：使用 DeepSeek 等纯文本模型时，**不要直接在对话框里粘贴图片**
+> ——系统会拒绝图片内容。请发送图片的**文件路径或网址**（如 `看看这张图 C:\Users\你\Pictures\test.png`）。
+>
+> 💡 不用 git？网页 **Download ZIP** 解压后进文件夹跑 `install.ps1` 一样；
+> 不想用向导？`$env:DASHEYE_API_KEY = "sk-xxx"` 一条命令即可起步（默认智谱免费）。
+> 配置即时生效：脚本自动读取 `~/.dsh-eye.json` 与注册表，改完无需重启任何程序。
+
+## 使用方式
+
+**在对话里（最常用）**
+
+```
+看看这张图 C:\Users\你\Pictures\test.png
+这张图里写了什么？https://example.com/a.png
+帮我画一只赛博朋克风格的猫
+```
+
+**在命令行（直接调用）**
+
+```bash
+node dsh-eye/scripts/vision.mjs "C:\Users\me\Pictures\test.png"                    # 看图：描述
+node dsh-eye/scripts/vision.mjs "a.png" "图里有多少只猫？" --mode ask              # 看图：提问
+node dsh-eye/scripts/vision.mjs "scan.png" --mode ocr                              # 看图：OCR
+node dsh-eye/scripts/generate.mjs "一只赛博朋克风格的猫，霓虹灯，雨夜"              # 画图
+node dsh-eye/scripts/vision.mjs "a.png" --base-url ... --model ... --api-key ...   # 临时覆盖配置
+```
 
 ## 功能
 
@@ -44,6 +94,27 @@ DeepSeek 很聪明，但它看不见。大多数方案让用户"切换支持图�
 - **友好错误**：缺 Key、格式异常、API 报错都有中文提示，并列出已检查的全部配置来源
 - **不拒绝**：SKILL.md 明确要求模型"有工具就用"，从根上消除"模型不支持图片"的尴尬
 - **来源三格式**：本地路径 / http(s) URL / data URI 全部支持
+
+## 配置
+
+配置来源优先级：**命令行参数 > 环境变量 > `~/.dsh-eye.json` > Windows 注册表 > 预设 > 内置默认**。
+
+| 变量 | 用途 | 回退顺序 |
+|---|---|---|
+| `DASHEYE_BASE_URL` · `DASHEYE_MODEL` · `DASHEYE_API_KEY` | 看图 | 参数 > 环境变量 > 文件/注册表 > 预设 |
+| `DASHEYE_GEN_BASE_URL` · `DASHEYE_GEN_MODEL` · `DASHEYE_GEN_API_KEY` | 画图 | 参数 > 环境变量 > 文件/注册表 > 看图配置 |
+| `DASHEYE_GEN_OUT` | 画图输出目录 | 默认 storages / tmp |
+| `DASHEYE_PRESET` / `DASHEYE_GEN_PRESET` | 看图 / 画图预设 | — |
+| `OPENAI_API_KEY` | 通用兜底 Key | — |
+
+常用端点速查：
+
+| 预设 | 看图端点 | 看图模型 | 画图模型 |
+|---|---|---|---|
+| `glm` | `open.bigmodel.cn/api/paas/v4` | `glm-4v-flash`（免费） | `cogview-3-flash` |
+| `qwen` | `dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-vl-max` | `wanx2.1-t2i-flash` |
+| `openai` | `api.openai.com/v1` | `gpt-4o` | `gpt-image-1` |
+| `ollama` | `localhost:11434/v1`（本地） | `llava` | — |
 
 ## 工作原理
 
@@ -67,71 +138,6 @@ OpenAI 兼容视觉端点（智谱 / 千问 / OpenAI / Ollama …）
 
 画图同理：`generate.mjs` 调用 `/images/generations`，保存图片到
 `%DSH_HOME%\storages\dsh-eye\`（未设置 DSH_HOME 时用系统临时目录），输出文件路径。
-
-## 快速开始（2 步，5 分钟）
-
-```powershell
-# ① 下载并一键安装（自动放进 skills 目录 + 启动配置向导）
-git clone https://github.com/B-LIPSTICK/dsh-eye.git
-powershell -ExecutionPolicy Bypass -File dsh-eye\install.ps1
-
-# ② 配置时只需填 API Key，其余直接回车用免费默认（智谱）
-#    完成后重启会话，分享图片路径 / URL 即可看图
-```
-
-> 💡 没有 git？直接网页 Download ZIP，解压后进文件夹跑 `install.ps1` 也一样。
-
-> ⚠️ **新手必读 · 第 1 条**：使用 DeepSeek 等纯文本模型时，**不要直接在对话框里粘贴图片**
-> ——系统会拒绝图片内容。请发送图片的**文件路径或网址**（如 `看看这张图 C:\Users\你\Pictures\test.png`），
-> 模型会通过本 skill 自动"看"图。
->
-> 💡 **配置即时生效**：脚本会自动读取你的用户级配置（`~/.dsh-eye.json` 与注册表），
-> 向导写完后**无需重启任何程序**，新的一次调用立即使用新配置。
-
-> 手动配置同样简单：`$env:DASHEYE_API_KEY = "sk-xxx"` 即可起步
-> （默认走智谱 `glm-4v-flash` 免费模型，画图默认 `cogview-3-flash`）。
-
-## 使用方式
-
-脚本位于 `<skill路径>\scripts\`，通过 `node` 执行。
-
-```bash
-# 看图：描述
-node dsh-eye/scripts/vision.mjs "C:\Users\me\Pictures\test.png"
-
-# 看图：针对图片提问
-node dsh-eye/scripts/vision.mjs "https://example.com/a.png" "图里有多少只猫？" --mode ask
-
-# 看图：OCR 提取文字
-node dsh-eye/scripts/vision.mjs "C:\x\scan.png" --mode ocr
-
-# 画图：生成图片（保存到 %DSH_HOME%\storages\dsh-eye\）
-node dsh-eye/scripts/generate.mjs "一只赛博朋克风格的猫，霓虹灯，雨夜"
-
-# 临时覆盖配置（不改任何文件）
-node dsh-eye/scripts/vision.mjs "C:\x\a.png" --base-url https://api.openai.com/v1 --model gpt-4o --api-key sk-xxx
-```
-
-## 配置
-
-配置来源优先级：**命令行参数 > 环境变量 > `~/.dsh-eye.json` > Windows 注册表 > 预设 > 内置默认**。
-
-| 变量 | 用途 | 回退顺序 |
-|---|---|---|
-| `DASHEYE_BASE_URL` · `DASHEYE_MODEL` · `DASHEYE_API_KEY` | 看图 | 参数 > 环境变量 > 文件/注册表 > 预设 |
-| `DASHEYE_GEN_BASE_URL` · `DASHEYE_GEN_MODEL` · `DASHEYE_GEN_API_KEY` | 画图 | 参数 > 环境变量 > 文件/注册表 > 看图配置 |
-| `DASHEYE_GEN_OUT` | 画图输出目录 | 默认 storages / tmp |
-| `DASHEYE_PRESET` / `DASHEYE_GEN_PRESET` | 看图 / 画图预设 | — |
-| `OPENAI_API_KEY` | 通用兜底 Key | — |
-
-常用端点速查：
-
-| 预设 | 看图端点 | 看图模型 | 画图模型 |
-|---|---|---|---|
-| `glm` | `open.bigmodel.cn/api/paas/v4` | `glm-4v-flash`（免费） | `cogview-3-flash` |
-| `qwen` | `dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-vl-max` | `wanx2.1-t2i-flash` |
-| `openai` | `api.openai.com/v1` | `gpt-4o` | `gpt-image-1` |
-| `ollama` | `localhost:11434/v1`（本地） | `llava` | — |
 
 ## 数据与隐私
 
@@ -177,7 +183,11 @@ dsh-eye/
 │   ├── generate.mjs      # 画图：文字 → 图片（自动保存 + 格式识别）
 │   └── setup.ps1         # 一键配置向导（注册表 + 配置文件双写）
 └── assets/
-    └── eye.svg           # logo
+    ├── icon-logo.png     # 主图标（README 顶部）
+    ├── icon-logo-500.png # GitHub 仓库头像专用（圆形安全版）
+    ├── icon-editorial.png# 编辑风备选
+    ├── icon-zine.png     # 纸感 zine 备选
+    └── eye.svg           # 原始矢量 logo
 ```
 
 ## 路线图

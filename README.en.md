@@ -50,15 +50,15 @@ one-click wizard, and changes take effect instantly.
 #    and launches the config wizard)
 git clone https://github.com/B-LIPSTICK/dsh-eye.git
 cd dsh-eye
-install.cmd
+.\install.cmd
 
 # ② In the wizard, only the API key is required — press Enter everywhere else
 #    to use the free defaults (Zhipu). Then restart your session and share an
 #    image path / URL to see it.
 ```
 
-> `install.cmd` works in **cmd, PowerShell, and double-click** (it invokes the
-> PowerShell wizard internally).
+> ⚠️ In PowerShell, run current-directory commands with a `.\` prefix (in cmd
+> just type `install.cmd`, or double-click the file).
 
 > ⚠️ **New to this?** With text-only models like DeepSeek, **don't paste images
 > directly into the chat** — the system rejects image content. Send the image's

@@ -45,20 +45,27 @@ one-click wizard, and changes take effect instantly.
 
 ## Quick Start (2 steps, 5 minutes)
 
+**PowerShell**
+
 ```powershell
-# ① Download and install in one shot (copies the skill into your skills dir
-#    and launches the config wizard)
 git clone https://github.com/B-LIPSTICK/dsh-eye.git
 cd dsh-eye
 .\install.cmd
-
-# ② In the wizard, only the API key is required — press Enter everywhere else
-#    to use the free defaults (Zhipu). Then restart your session and share an
-#    image path / URL to see it.
 ```
 
-> ⚠️ In PowerShell, run current-directory commands with a `.\` prefix (in cmd
-> just type `install.cmd`, or double-click the file).
+**cmd (Command Prompt)**
+
+```cmd
+git clone https://github.com/B-LIPSTICK/dsh-eye.git
+cd dsh-eye
+install.cmd
+```
+
+> ⚠️ The commands differ per terminal: PowerShell needs the `.\` prefix, cmd
+> doesn't. Don't want to remember? Just **double-click** `install.cmd`. It
+> installs the skill into your skills dir and launches the config wizard —
+> only the API key is required, press Enter everywhere else for the free
+> defaults (Zhipu). Then restart your session and share an image path / URL.
 
 > ⚠️ **New to this?** With text-only models like DeepSeek, **don't paste images
 > directly into the chat** — the system rejects image content. Send the image's

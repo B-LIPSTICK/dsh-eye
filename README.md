@@ -44,17 +44,24 @@
 
 ## 快速开始（2 步，5 分钟）
 
+**PowerShell**
+
 ```powershell
-# ① 下载并一键安装（自动放进 skills 目录 + 启动配置向导）
 git clone https://github.com/B-LIPSTICK/dsh-eye.git
 cd dsh-eye
 .\install.cmd
-
-# ② 向导里只需填 API Key，其余直接回车用免费默认（智谱）
-#    完成后重启会话，分享图片路径 / URL 即可看图
 ```
 
-> ⚠️ PowerShell 运行当前目录命令必须带 `.\` 前缀（cmd 里直接 `install.cmd`、或双击文件都行）。
+**cmd（命令提示符）**
+
+```cmd
+git clone https://github.com/B-LIPSTICK/dsh-eye.git
+cd dsh-eye
+install.cmd
+```
+
+> ⚠️ 两个终端命令**不一致**：PowerShell 需要 `.\` 前缀，cmd 不需要。不想记？直接**双击** `install.cmd` 也行。
+> 运行后会自动安装到 skills 目录并启动配置向导——只需填 API Key，其余回车用免费默认（智谱）。完成后重启会话，分享图片路径 / URL 即可看图。
 
 > ⚠️ **新手必读**：使用 DeepSeek 等纯文本模型时，**不要直接在对话框里粘贴图片**
 > ——系统会拒绝图片内容。请发送图片的**文件路径或网址**（如 `看看这张图 C:\Users\你\Pictures\test.png`）。

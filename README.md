@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="dsh-eye/assets/eye.svg" width="120" alt="dsh-eye">
+<img src="dsh-eye/assets/icon-logo.png" width="120" alt="dsh-eye">
 
 # dsh-eye
 

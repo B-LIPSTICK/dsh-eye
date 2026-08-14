@@ -1,5 +1,7 @@
 <div align="center">
 
+**简体中文** | [English](README.en.md)
+
 <img src="dsh-eye/assets/icon-logo.png" width="120" alt="dsh-eye">
 
 # dsh-eye

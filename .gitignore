@@ -1,0 +1,22 @@
+# 依赖与构建
+node_modules/
+lib/
+dist/
+
+# npm / pnpm
+*.tgz
+.npm-cache/
+
+# 密钥与配置（绝不允许入库）
+.dsh-eye.json
+*.npmrc
+.tmp-npmrc
+
+# 日志与临时文件
+*.log
+test/out.txt
+test/*-out.txt
+
+# 系统
+Thumbs.db
+.DS_Store

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dsh-eye · 给纯文本模型一双眼睛 + 一双手</title>
+<style>
+  :root {
+    --ink: #04060b;
+    --ink-2: #0a0f14;
+    --ink-3: #10181f;
+    --line: rgba(55, 230, 200, 0.18);
+    --cyan: #37e6c8;
+    --cyan-dim: #1f9e8a;
+    --amber: #ffb454;
+    --paper: #eafffb;
+    --muted: #7f9aa0;
+    --mono: "JetBrains Mono", "Cascadia Code", Consolas, "Courier New", monospace;
+    --serif: Georgia, "Noto Serif SC", "Songti SC", SimSun, serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ---- 背景质感：噪点 + 扫描线 + 辉光 ---- */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .scanlines {
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0, transparent 3px,
+      rgba(0, 0, 0, 0.22) 3px, rgba(0, 0, 0, 0.22) 4px
+    );
+    pointer-events: none;
+    z-index: 998;
+    animation: drift 9s linear infinite;
+  }
+  @keyframes drift { from { background-position-y: 0; } to { background-position-y: 8px; } }
+
+  .glow {
+    position: fixed;
+    top: -30vh; left: 50%;
+    transform: translateX(-50%);
+    width: 90vw; height: 70vh;
+    background: radial-gradient(ellipse at center, rgba(55, 230, 200, 0.10), transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---- 顶栏 ---- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 0 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; font-size: 15px; letter-spacing: 2px; }
+  .brand .dot { color: var(--amber); }
+  nav { display: flex; gap: 22px; font-size: 12px; letter-spacing: 1px; }
+  nav a { color: var(--muted); text-decoration: none; transition: color .2s; }
+  nav a:hover { color: var(--cyan); }
+
+  /* ---- Hero ---- */
+  .hero { padding: 90px 0 60px; text-align: center; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--amber);
+    border: 1px solid rgba(255, 180, 84, 0.35);
+    padding: 6px 14px;
+    border-radius: 2px;
+    margin-bottom: 34px;
+    opacity: 0;
+    animation: rise .8s .1s ease forwards;
+  }
+  .hero h1 {
+    font-size: clamp(44px, 9vw, 84px);
+    font-weight: 800;
+    letter-spacing: 6px;
+    line-height: 1.05;
+    opacity: 0;
+    animation: rise .8s .25s ease forwards;
+  }
+  .hero h1 .eye { color: var(--cyan); }
+  .hero h1 .hand { color: var(--amber); }
+  .hero .tagline {
+    margin-top: 22px;
+    font-family: var(--serif);
+    font-size: clamp(17px, 3vw, 22px);
+    color: var(--muted);
+    font-style: italic;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: rise .8s .4s ease forwards;
+  }
+  .hero .tagline b { color: var(--paper); font-style: normal; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+  /* ---- 眼睛 ---- */
+  .iris-wrap { margin: 46px auto 0; width: 150px; height: 96px; position: relative; opacity: 0; animation: rise 1s .5s ease forwards; }
+  .iris-wrap svg { width: 100%; height: 100%; display: block; }
+  .pulse { transform-origin: 100px 60px; animation: pulse 3.4s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+  .ring-spin { transform-origin: 100px 60px; animation: spin 26s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .blink { animation: blink 6.4s infinite; }
+  @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.06); } }
+
+  /* ---- 徽章 ---- */
+  .badges { margin-top: 40px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; opacity: 0; animation: rise .8s .6s ease forwards; }
+  .badge {
+    font-size: 11px; letter-spacing: 1.5px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 2px;
+  }
+  .badge b { color: var(--cyan); font-weight: 600; }
+
+  /* ---- 终端演示 ---- */
+  .terminal {
+    margin: 70px 0;
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+    opacity: 0;
+    animation: rise .9s .7s ease forwards;
+  }
+  .term-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .term-head i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .term-head i:nth-child(1) { background: #ff5f57; }
+  .term-head i:nth-child(2) { background: #febc2e; }
+  .term-head i:nth-child(3) { background: #28c840; }
+  .term-head span { margin-left: 10px; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+  .term-body { padding: 22px 22px 26px; font-size: 13.5px; min-height: 250px; }
+  .term-body .line { color: var(--muted); white-space: pre-wrap; word-break: break-all; }
+  .term-body .cmd { color: var(--paper); }
+  .term-body .cmd::before { content: "❯ "; color: var(--cyan); }
+  .term-body .ok { color: var(--amber); }
+  .term-body .dim { color: var(--muted); }
+  .cursor { display: inline-block; width: 8px; height: 15px; background: var(--cyan); vertical-align: -2px; animation: blink-c 1s steps(1) infinite; }
+  @keyframes blink-c { 50% { opacity: 0; } }
+
+  /* ---- 区块 ---- */
+  section { padding: 34px 0 10px; }
+  .sec-label {
+    font-size: 11px; letter-spacing: 4px; color: var(--amber);
+    display: flex; align-items: center; gap: 14px; margin-bottom: 28px;
+  }
+  .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .card {
+    background: linear-gradient(160deg, var(--ink-2), var(--ink-3));
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 26px 24px;
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .card:hover { transform: translateY(-4px); border-color: rgba(55, 230, 200, 0.45); box-shadow: 0 16px 44px rgba(55, 230, 200, 0.07); }
+  .card .ico { font-size: 26px; margin-bottom: 14px; display: block; }
+  .card h3 { font-size: 15px; letter-spacing: 2px; margin-bottom: 10px; }
+  .card h3 em { font-style: normal; color: var(--cyan); }
+  .card p { font-size: 12.5px; color: var(--muted); }
+  .card .code { margin-top: 14px; font-size: 11.5px; color: var(--amber); word-break: break-all; }
+
+  /* ---- 预设表 ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  th { color: var(--amber); font-weight: 600; letter-spacing: 2px; font-size: 11px; }
+  td { color: var(--muted); }
+  td b { color: var(--paper); font-weight: 600; }
+  tr:hover td { background: rgba(55, 230, 200, 0.03); }
+
+  /* ---- 步骤 ---- */
+  .steps { counter-reset: step; display: grid; gap: 14px; }
+  .step {
+    display: flex; gap: 18px; align-items: flex-start;
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 20px 22px;
+  }
+  .step::before {
+    counter-increment: step;
+    content: "0" counter(step);
+    font-size: 20px; font-weight: 800; color: var(--cyan);
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+  .step h3 { font-size: 14px; letter-spacing: 1px; margin-bottom: 6px; }
+  .step p { font-size: 12.5px; color: var(--muted); }
+  .step code {
+    display: inline-block;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-size: 11.5px;
+    color: var(--amber);
+  }
+
+  /* ---- 原则 ---- */
+  .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+  .principle { border-left: 2px solid var(--amber); padding: 4px 0 4px 18px; }
+  .principle h3 { font-size: 13px; letter-spacing: 2px; margin-bottom: 8px; color: var(--paper); }
+  .principle p { font-size: 12px; color: var(--muted); }
+
+  /* ---- Footer ---- */
+  footer {
+    margin-top: 80px;
+    border-top: 1px solid var(--line);
+    padding: 36px 0 46px;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+  footer pre { font-size: 10px; color: var(--cyan-dim); margin-bottom: 16px; line-height: 1.35; }
+
+  @media (max-width: 640px) {
+    nav { display: none; }
+    .hero { padding-top: 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="glow"></div>
+
+<div class="wrap">
+
+  <header>
+    <div class="brand"><img src="dsh-eye/assets/eye.svg" width="26" alt="">dsh-eye<span class="dot">.</span></div>
+    <nav>
+      <a href="#why">为什么</a>
+      <a href="#demo">演示</a>
+      <a href="#caps">能力</a>
+      <a href="#presets">预设</a>
+      <a href="#install">安装</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">AGENT SKILL · 零依赖 · 纯 NODE</div>
+    <h1><span class="eye">dsh-eye</span><br>给纯文本模型<br><span class="hand">一双眼睛 + 一双手</span></h1>
+    <p class="tagline">DeepSeek 很聪明，但它看不见。<br>让没有视觉能力的模型，<b>看见</b> 这个世界。</p>
+
+    <div class="iris-wrap">
+      <svg viewBox="0 0 200 120" aria-hidden="true">
+        <g class="blink">
+          <path d="M16 60 Q100 -14 184 60 Q100 134 16 60 Z" fill="#04060b" stroke="#37e6c8" stroke-width="3"/>
+          <circle class="pulse" cx="100" cy="60" r="34" fill="url(#ir)" opacity="0.9"/>
+          <circle class="ring-spin" cx="100" cy="60" r="42" fill="none" stroke="#37e6c8" stroke-width="1" stroke-dasharray="4 10" opacity="0.6"/>
+          <circle cx="100" cy="60" r="14" fill="#ffb454"/>
+          <circle cx="91" cy="51" r="4.5" fill="#eafffb" opacity="0.95"/>
+          <line x1="16" y1="60" x2="184" y2="60" stroke="#ffb454" stroke-width="1.5" stroke-dasharray="7 5" opacity="0.7"/>
+        </g>
+        <defs>
+          <radialGradient id="ir" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#37e6c8"/>
+            <stop offset="70%" stop-color="#0e7a6a"/>
+            <stop offset="100%" stop-color="#053b33"/>
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="badges">
+      <div class="badge">NODE <b>≥18</b></div>
+      <div class="badge">依赖 <b>0</b></div>
+      <div class="badge">看图 <b>描述·问答·OCR</b></div>
+      <div class="badge">画图 <b>文字→图片</b></div>
+      <div class="badge">配置 <b>看图/画图独立</b></div>
+    </div>
+  </section>
+
+  <section class="terminal" id="demo">
+    <div class="term-head">
+      <i></i><i></i><i></i>
+      <span>dsh-eye — terminal demo</span>
+    </div>
+    <div class="term-body" id="term"></div>
+  </section>
+
+  <section id="caps">
+    <div class="sec-label">CAPABILITIES / 能力</div>
+    <div class="grid">
+      <div class="card">
+        <span class="ico">👁</span>
+        <h3><em>vision_describe</em> · 看图</h3>
+        <p>详细描述图片：场景、元素位置、颜色风格、图中文字、构图问题。本地路径 / URL / data URI 皆可。</p>
+        <div class="code">node vision.mjs "C:\Users\me\test.png"</div>
+      </div>
+      <div class="card">
+        <span class="ico">❓</span>
+        <h3><em>vision_ask</em> · 视觉问答</h3>
+        <p>针对图片提出具体问题，让视觉模型替你回答："图里有多少只猫？""这个报错是什么意思？"</p>
+        <div class="code">node vision.mjs "a.png" "图里有几只猫？" --mode ask</div>
+      </div>
+      <div class="card">
+        <span class="ico">📄</span>
+        <h3><em>vision_ocr</em> · 文字提取</h3>
+        <p>逐字提取图片中的全部文字，保持原始排版顺序，不做任何加工。</p>
+        <div class="code">node vision.mjs "scan.png" --mode ocr</div>
+      </div>
+      <div class="card">
+        <span class="ico">✋</span>
+        <h3><em>image_generate</em> · 画图</h3>
+        <p>文字描述生成图片，自动保存到本地并识别格式；后端与看图完全独立，也可一键复用。</p>
+        <div class="code">node generate.mjs "赛博朋克风格的猫"</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="presets">
+    <div class="sec-label">PRESETS / 后端预设</div>
+    <table>
+      <tr><th>预设</th><th>看图端点</th><th>看图模型</th><th>画图模型</th></tr>
+      <tr><td><b>glm</b></td><td>open.bigmodel.cn/api/paas/v4</td><td>glm-4v-flash <b>免费</b></td><td>cogview-3-flash</td></tr>
+      <tr><td><b>qwen</b></td><td>dashscope.aliyuncs.com/compatible-mode/v1</td><td>qwen-vl-max</td><td>wanx2.1-t2i-flash</td></tr>
+      <tr><td><b>openai</b></td><td>api.openai.com/v1</td><td>gpt-4o</td><td>gpt-image-1</td></tr>
+      <tr><td><b>ollama</b></td><td>localhost:11434/v1（本地）</td><td>llava</td><td>—</td></tr>
+    </table>
+  </section>
+
+  <section id="install">
+    <div class="sec-label">INSTALL / 三步开始</div>
+    <div class="steps">
+      <div class="step">
+        <div>
+          <h3>放进 skills 目录</h3>
+          <p>把 <code>dsh-eye</code> 文件夹复制到 <code>$env:USERPROFILE\.agents\skills\</code></p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>运行配置向导</h3>
+          <p><code>powershell -ExecutionPolicy Bypass -File dsh-eye\scripts\setup.ps1</code><br>看图端点 → 模型 → Key → 画图（可复用看图配置）</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>让模型使用它</h3>
+          <p>分享图片路径 / URL，或说"帮我画一只赛博朋克风格的猫"</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">DESIGN / 设计原则</div>
+    <div class="principles">
+      <div class="principle"><h3>零依赖</h3><p>只用 Node 内置模块，复制即用，任何机器都能跑。</p></div>
+      <div class="principle"><h3>配置分离</h3><p>看图与画图端点、模型、Key 互不干扰，也可一键复用。</p></div>
+      <div class="principle"><h3>友好错误</h3><p>缺 Key、格式异常、API 报错都有中文提示，而非裸堆栈。</p></div>
+      <div class="principle"><h3>不拒绝</h3><p>SKILL.md 要求模型"有工具就用"，从根上消除"模型不支持图片"。</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <pre>
+   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+  █ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+  █ ████████████████████████████████████████████ █
+  █ █   dsh-eye · give text-only LLMs an eye   █ █
+  █ ████████████████████████████████████████████ █
+  █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█</pre>
+    <div>dsh-eye · MIT · made with 👁 + 🖤</div>
+  </footer>
+
+</div>
+
+<script>
+  // ---- 终端打字演示 ----
+  const DEMO = [
+    { cmd: 'node vision.mjs "C:\\\\Users\\\\me\\\\Pictures\\\\test.png"', out: '' },
+    { cmd: '', out: '── 图片分析结果 ──────────────────────────────' },
+    { cmd: '', out: '这是一张城市夜景照片：雨后的街道，霓虹灯倒映在积水里。' },
+    { cmd: '', out: '主体是远处高楼的广告牌（青色与琥珀色），构图居中偏右……' },
+    { cmd: '', out: '图中文字：「NEON CITY」；未发现明显模糊或截断。' },
+    { cmd: 'node vision.mjs "screenshot.png" "这个报错是什么意思？" --mode ask', out: '' },
+    { cmd: '', out: '── 视觉问答 ──────────────────────────────────' },
+    { cmd: '', out: '这是 Node.js 的 ENOENT 错误：找不到模块路径。检查 require 的路径拼写……' },
+    { cmd: 'node generate.mjs "赛博朋克风格的猫，霓虹灯，雨夜"', out: '' },
+    { cmd: '', out: '── 图片已生成 ────────────────────────────────' },
+    { cmd: '', out: 'C:\\Users\\me\\.dsh\\storages\\dsh-eye\\dsh-eye-1763000000000.png' },
+  ];
+
+  const term = document.getElementById('term');
+  let li = 0, ci = 0, outIdx = 0;
+
+  function render() {
+    term.innerHTML = DEMO.slice(0, outIdx).map((l, i) => {
+      if (i === li && l.cmd !== '') {
+        return `<div class="line cmd">${l.cmd.slice(0, ci)}<span class="cursor"></span></div>`;
+      }
+      if (i === li && l.cmd === '') {
+        return `<div class="line ok">${l.cmd}${' '.repeat(0)}</div>`;
+      }
+      return l.cmd ? `<div class="line cmd">${l.cmd}</div>` : `<div class="line ok">${l.out}</div>`;
+    }).join('');
+  }
+
+  function tick() {
+    const cur = DEMO[li];
+    if (cur.cmd) {
+      ci += 1;
+      if (ci > cur.cmd.length) { ci = 0; li += 1; setTimeout(tick, 260); return; }
+      setTimeout(tick, 34);
+    } else {
+      outIdx += 1;
+      if (outIdx > li) { li += 1; outIdx = li + 1; }
+      if (li >= DEMO.length) { li = 0; outIdx = 0; setTimeout(tick, 2600); return; }
+      setTimeout(tick, 420);
+    }
+    render();
+  }
+
+  setTimeout(() => { li = 0; render(); setTimeout(tick, 900); }, 1200);
+</script>
+</body>
+</html>

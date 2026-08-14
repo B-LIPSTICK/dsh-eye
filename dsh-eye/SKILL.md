@@ -30,8 +30,9 @@ description: >-
 ## 前提
 
 - Node.js 18+（`node --version` 确认）
-- 已配置 API Key。首次使用优先让用户运行仓库根的 `install.ps1`（一键安装 + 配置向导，
-  除 API Key 外全程回车用免费默认）；已装好 skill 的则直接运行配置向导：
+- 已配置 API Key。首次使用优先让用户运行仓库根的 `install.cmd`（cmd / PowerShell /
+  双击通用，一键安装 + 配置向导，除 API Key 外全程回车用免费默认）；已装好 skill 的
+  则直接运行配置向导（`setup.cmd` 或 `setup.ps1`）：
 
 ```powershell
 # 交互式配置（看图 + 画图，除 Key 外可全部回车用免费默认）

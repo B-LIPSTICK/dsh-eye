@@ -49,21 +49,26 @@ one-click wizard, and changes take effect instantly.
 # ① Download and install in one shot (copies the skill into your skills dir
 #    and launches the config wizard)
 git clone https://github.com/B-LIPSTICK/dsh-eye.git
-powershell -ExecutionPolicy Bypass -File dsh-eye\install.ps1
+cd dsh-eye
+install.cmd
 
 # ② In the wizard, only the API key is required — press Enter everywhere else
 #    to use the free defaults (Zhipu). Then restart your session and share an
 #    image path / URL to see it.
 ```
 
+> `install.cmd` works in **cmd, PowerShell, and double-click** (it invokes the
+> PowerShell wizard internally).
+
 > ⚠️ **New to this?** With text-only models like DeepSeek, **don't paste images
 > directly into the chat** — the system rejects image content. Send the image's
 > **file path or URL** instead (e.g. `look at C:\Users\you\Pictures\test.png`).
 >
-> 💡 No git? Use the **Download ZIP** button and run `install.ps1` inside the
-> extracted folder. Prefer manual setup? `$env:DASHEYE_API_KEY = "sk-xxx"` is
-> enough to start (free Zhipu defaults). Config takes effect instantly — the
-> scripts read `~/.dsh-eye.json` and the Windows registry, no restarts needed.
+> 💡 No git? Use the **Download ZIP** button and run `install.cmd` inside the
+> extracted folder. Prefer manual setup? One command is enough to start (free
+> Zhipu defaults): PowerShell `$env:DASHEYE_API_KEY = "sk-xxx"` or
+> cmd `set DASHEYE_API_KEY=sk-xxx`. Config takes effect instantly — the scripts
+> read `~/.dsh-eye.json` and the Windows registry, no restarts needed.
 
 ## Usage
 
@@ -200,13 +205,18 @@ dsh-eye/
 ├── scripts/
 │   ├── vision.mjs        # vision: describe / VQA / OCR (multi-backend, zero-dep)
 │   ├── generate.mjs      # generation: text → image (auto-save + format sniffing)
-│   └── setup.ps1         # one-click config wizard (registry + config file)
+│   ├── setup.ps1         # one-click config wizard (registry + config file)
+│   └── setup.cmd         # cmd entry for the wizard (cmd / PowerShell / double-click)
 └── assets/
     ├── icon-logo.png     # main icon (README hero)
     ├── icon-logo-500.png # GitHub repository picture (circular-safe)
     ├── icon-editorial.png# editorial-style alternative
     ├── icon-zine.png     # paper zine alternative
     └── eye.svg           # original vector logo
+
+repo root:
+├── install.ps1           # one-click installer (PowerShell)
+└── install.cmd           # one-click installer (cmd / PowerShell / double-click)
 ```
 
 ## Roadmap

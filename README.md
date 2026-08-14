@@ -47,17 +47,21 @@
 ```powershell
 # ① 下载并一键安装（自动放进 skills 目录 + 启动配置向导）
 git clone https://github.com/B-LIPSTICK/dsh-eye.git
-powershell -ExecutionPolicy Bypass -File dsh-eye\install.ps1
+cd dsh-eye
+install.cmd
 
 # ② 向导里只需填 API Key，其余直接回车用免费默认（智谱）
 #    完成后重启会话，分享图片路径 / URL 即可看图
 ```
 
+> `install.cmd` 在 **cmd、PowerShell 都能跑，也可以直接双击**（内部自动调用 PowerShell 向导）。
+
 > ⚠️ **新手必读**：使用 DeepSeek 等纯文本模型时，**不要直接在对话框里粘贴图片**
 > ——系统会拒绝图片内容。请发送图片的**文件路径或网址**（如 `看看这张图 C:\Users\你\Pictures\test.png`）。
 >
-> 💡 不用 git？网页 **Download ZIP** 解压后进文件夹跑 `install.ps1` 一样；
-> 不想用向导？`$env:DASHEYE_API_KEY = "sk-xxx"` 一条命令即可起步（默认智谱免费）。
+> 💡 不用 git？网页 **Download ZIP** 解压后进文件夹跑 `install.cmd` 一样；
+> 不想用向导？一条命令即可起步（默认智谱免费）：
+> PowerShell：`$env:DASHEYE_API_KEY = "sk-xxx"` · cmd：`set DASHEYE_API_KEY=sk-xxx`
 > 配置即时生效：脚本自动读取 `~/.dsh-eye.json` 与注册表，改完无需重启任何程序。
 
 ## 使用方式
@@ -183,13 +187,18 @@ dsh-eye/
 ├── scripts/
 │   ├── vision.mjs        # 看图：描述 / 问答 / OCR（多后端，零依赖）
 │   ├── generate.mjs      # 画图：文字 → 图片（自动保存 + 格式识别）
-│   └── setup.ps1         # 一键配置向导（注册表 + 配置文件双写）
+│   ├── setup.ps1         # 一键配置向导（注册表 + 配置文件双写）
+│   └── setup.cmd         # 向导的 cmd 入口（PowerShell / cmd / 双击通用）
 └── assets/
     ├── icon-logo.png     # 主图标（README 顶部）
     ├── icon-logo-500.png # GitHub 仓库头像专用（圆形安全版）
     ├── icon-editorial.png# 编辑风备选
     ├── icon-zine.png     # 纸感 zine 备选
     └── eye.svg           # 原始矢量 logo
+
+仓库根：
+├── install.ps1           # 一键安装（PowerShell 版）
+└── install.cmd           # 一键安装（cmd / PowerShell / 双击通用）
 ```
 
 ## 路线图

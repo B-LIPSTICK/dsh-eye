@@ -68,8 +68,16 @@ install.cmd
 > defaults (Zhipu). Then restart your session and share an image path / URL.
 
 > ⚠️ **New to this?** With text-only models like DeepSeek, **don't paste images
-> directly into the chat** — the system rejects image content. Send the image's
-> **file path or URL** instead (e.g. `look at C:\Users\you\Pictures\test.png`).
+> directly into the chat** — image content is rejected by the request pipeline
+> (`UNSUPPORTED_CONTENT`), every turn fails, and automatic retries kick in, so
+> **the session gets stuck in a "running" state where you can't type** (while
+> burning API calls). Send the image's **file path or URL** instead (e.g.
+> `look at C:\Users\you\Pictures\test.png`).
+>
+> 🚑 **Already stuck after pasting an image?** Click the **Stop** button next to
+> the input box to interrupt the current turn; if failed turns keep restarting
+> on their own, **open a new conversation** (the old one can just sit idle) and
+> send the image path / URL there.
 >
 > 💡 No git? Use the **Download ZIP** button and run `install.cmd` inside the
 > extracted folder. Prefer manual setup? One command is enough to start (free
@@ -187,7 +195,11 @@ Billed at whatever your chosen model charges. Zero-cost starting combos:
 - **"No API key configured"**: run `setup.ps1` (writes both the config file and the
   registry), or set `DASHEYE_API_KEY` manually (`DASHEYE_GEN_API_KEY` for drawing).
 - **The image was pasted into the chat (no path/URL)**: text-only models can't get
-  the image bytes — ask for a file path or URL.
+  the image bytes, and an image attachment makes every turn fail immediately,
+  trapping the session in a failure-retry loop (it looks perpetually "running"
+  and won't accept input). Ask for a file path or URL; if the session is already
+  stuck, click **Stop** to interrupt, and if that doesn't help, **open a new
+  conversation** and send the path / URL there.
 - **Generation returns 4xx**: make sure the endpoint supports `/images/generations`
   and the model name is correct; some free models only accept specific sizes,
   try `--size 1024x1024`.
